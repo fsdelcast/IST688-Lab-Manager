@@ -14,8 +14,23 @@ st.title("Page 2: My Document Question Answering")
 # via `st.secrets`, see https://docs.streamlit.io/develop/concepts/connections/secrets-management
 # openai_api_key = st.text_input("OpenAI API Key", type="password")
 
+
+st.sidebar.title (":red[Labs]")
+
+if st.sidebar.checkbox('Use Advance Model'):
+    model = 'gpt-4o'
+else: model = 'gpt-4o-mini'
+
+summary_type = st.sidebar.selectbox('Choose a summary type',
+                            ('Summarize the document in 100 words',
+                             'Summarize the document in 2 connecting paragraphs',
+                             'Summarize the document in 5 bullet points'))
+
+
 openai_api_key = st.secrets['Openai_key']
 st.write ('Do you want to know my secret? ', st.secrets['other_secret'])
+
+
 
 
 if not openai_api_key:
@@ -35,30 +50,27 @@ else:
             "Upload a document (.txt or .md)", type=("txt", "md")
         )
 
-        # Ask the user for a question via `st.text_area`.
-        question = st.text_area(
-            "Now ask a question about the document!",
-            placeholder="Can you give me a short summary?",
-            disabled=not uploaded_file,
-        )
 
-
-        if uploaded_file and question:
+        if uploaded_file:
 
             # Process the uploaded file and question.
             document = uploaded_file.read().decode()
             messages = [
-                {
+                {"role": "system",
+                 "content": "You are an assistant that talks like a pirate"
+                },
+                {   
                     "role": "user",
-                    "content": f"Here's a document: {document} \n\n---\n\n {question}",
+                    "content": f"Here's a document: {document} \n\n---\n\n {summary_type}",
                 }
             ]
 
             # Generate an answer using the OpenAI API.
             stream = client.chat.completions.create(
-                model="gpt-4o-mini",
+                model=model,
                 messages=messages,
                 stream=True,
+                temperature = 0
             )
 
             # Stream the response to the app using `st.write_stream`.
