@@ -31,12 +31,12 @@ if prompt := st.chat_input('What is up?'):
     
     client = st.session_state.client
     stream = client.chat.completions.create(
-        model=model_to_use,
+        model=model,
         messages = st.session_state.messages,
         stream = True
     )
 
     with st.chat_message('assistant'):
-        respones = st.write_stream(stream)
+        responses = st.write_stream(stream)
 
-    st.session_state.messages.append({'role':'assistant','content':response})
+    st.session_state.messages.append({'role':'assistant','content':responses})
