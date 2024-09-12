@@ -1,6 +1,12 @@
 import streamlit as st
 from openai import OpenAI
 
+# define the message to get the number of messages to pass to the LLM
+def get_messages(list_messages,k):
+    beggining = (k*2)+1
+    output = list_messages[-beggining:]
+    return output 
+
 # Show title and description.
 st.title("Page 3: Chatbot")
 
@@ -16,27 +22,40 @@ if 'client' not in st.session_state:
     st.session_state.client = OpenAI(api_key=openai_api_key)
 
 if 'messages' not in st.session_state:
-    st.session_state ['messages']=\
-        [{'role':'assistant','content':'How can I help you?'}]
+    st.session_state['messages']=\
+        [{'role':'assistant','content':'I want to answer a question'}]
 
 for msg in st.session_state.messages:
-    with st.chat_message(msg['role']):
-        st.write(msg['content'])
+    st.chat_message(msg['role']).write(msg['content'])
 
-if prompt := st.chat_input('What is up?'): 
-    st.session_state.messages.append({'role':'user','content':prompt})
-
-    with st.chat_message ('user'):
-        st.write(prompt)
+if prompt := st.chat_input('Ask a question'):
     
+    #end_text = ' At the end, ask me "DO YOU WANT MORE INFO?"'
+    #full_prompt = prompt + end_text 
+    
+    st.chat_message ('user').write(prompt)
+
+    st.session_state.messages.append({'role':'user','content':prompt})
     client = st.session_state.client
-    stream = client.chat.completions.create(
-        model=model,
-        messages = st.session_state.messages,
-        stream = True
-    )
 
-    with st.chat_message('assistant'):
-        responses = st.write_stream(stream)
+    if prompt in ['No','no','NO']:
+        full_responses = 'I want to answer a question'
+        st.write(full_responses)
+        #st.chat_message('assistant').write('I want to answer a question')
+    else:
+        messages_to_pass = get_messages(st.session_state.messages,2)
 
-    st.session_state.messages.append({'role':'assistant','content':responses})
+        stream = client.chat.completions.create(
+            model=model,
+            messages = messages_to_pass,
+            stream = True
+        )
+
+        with st.chat_message('assistant'):
+            responses = st.write_stream(stream)
+            full_responses = responses + ' DO YOU WANT MORE INFO?'
+            st.write ('DO YOU WANT MORE INFO?')
+    
+    st.session_state.messages.append({'role':'assistant','content':full_responses})
+
+    #st.write(messages_to_pass)
