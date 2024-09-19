@@ -1,6 +1,8 @@
 import streamlit as st
 from openai import OpenAI
 from pathlib import Path
+import os
+from PyPDF2 import PdfReader
 
 __import__('pysqlite3')
 
