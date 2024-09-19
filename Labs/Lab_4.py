@@ -3,6 +3,8 @@ from openai import OpenAI
 from pathlib import Path
 import os
 from PyPDF2 import PdfReader
+import PyPDF2
+
 
 __import__('pysqlite3')
 
@@ -34,14 +36,9 @@ def add_to_collection(collection,text,filename):
         embeddings = [embedding]
     )
 
-
-# Lab 4
-folder_path = Path("../lab4_files/")
-
-# Loop through all files in the folder
-for file_path in folder_path.iterdir():
-    text = file_path.read().decode()
-    add_to_collection('Lab4Collection',text,file_path)
+client = chromadb.PersistentClient(path = 'chromadb.client' )
+chroma_client = chromadb.PersistentClient()
+collection = chroma_client.get_or_create_collection(name = 'Lab4Collection')
     
 
 # Show title and description.
@@ -80,6 +77,23 @@ if prompt := st.chat_input('Ask a question'):
 
     st.session_state.messages.append({'role':'user','content':prompt})
     openai_client = st.session_state.openai_client
+
+    # Lab 4
+    folder_path = Path("lab4_files/")
+
+    # Loop through all files in the folder
+    for file_path in folder_path.iterdir():
+
+        reader = PyPDF2.PdfReader(file_path)
+        document = ''
+        # loop through pages and extract the text data
+        for page_num in range(len(reader.pages)):
+            page = reader.pages[page_num]
+            document += page.extract_text()
+        # Throw an error if it is not pdf or txt.
+
+        add_to_collection(collection,document,file_path)
+
 
     
     # new lab 4
