@@ -34,7 +34,7 @@ def add_to_collection(collection,text,filename):
 
 
 # Lab 4
-folder_path = Path("../Lab4_files/")
+folder_path = Path("../lab4_files/")
 
 # Loop through all files in the folder
 for file_path in folder_path.iterdir():
