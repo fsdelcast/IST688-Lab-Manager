@@ -40,6 +40,7 @@ def add_to_collection(collection,text,filename):
 st.title("Page 4: Chatbot")
 st.sidebar.title (":red[Labs]")
 
+# get the model
 if st.sidebar.checkbox('Use Advance Model'):
     model = 'gpt-4o'
 else: model = 'gpt-4o-mini'
@@ -80,19 +81,15 @@ if 'Lab4_vectorDB' not in st.session_state:
                 # loop through pages and extract the text data
                 for page_num in range(len(reader.pages)):
                     page = reader.pages[page_num]
-                    document += page.extract_text()
-                
+                    document += page.extract_text()                
                 # Get the filename
                 filename = file_path.name
-
                 add_to_collection(collection,document,str(filename))
-
             except Exception as e:
                 print(f"Error reading {file_path.name}: {e}")
 
 if 'Lab4_vectorDB' in st.session_state:
     collection = st.session_state['Lab4_vectorDB']
-    
     # Retrieve the documents, embeddings, and metadata from the collection
     results = collection.get()
     
@@ -102,9 +99,6 @@ if 'Lab4_vectorDB' in st.session_state:
     #st.write(f"Metadata: {results['metadatas']}")
     #st.write(f"Embeddings: {results['embeddings'][0]}")
     #st.write(f"Embeddings: {results['data'][0]}")
-
-
-
 
 for msg in st.session_state.messages:
     st.chat_message(msg['role']).write(msg['content'])
@@ -116,7 +110,7 @@ if prompt := st.chat_input('Ask a question'):
 
     openai_client = st.session_state.openai_client
 
-    # new lab 4 - Send querry embeding
+    # get querry embedings
     response = openai_client.embeddings.create(
         input = prompt,
         model = 'text-embedding-3-small'
@@ -132,15 +126,31 @@ if prompt := st.chat_input('Ask a question'):
     )
 
     # Print query results
+    doc_text = ''
     for i in range(len(results['documents'][0])):
         doc = results['documents'][0][i]
         doc_id = results['ids'][0][i]
         metadata = results['metadatas'][0][i]
         #st.write (f'the following file/syllabus might be helpful: {doc_id}')
         #st.write (f"This is the metadata: {metadata}")
+        doc_text += doc
         
     # Memory of 2 User messages.
     messages_to_pass = get_messages(st.session_state.messages,2)
+
+    # Insert system message
+    system_message = {'role':'system',
+                'content':\
+                f"""
+                You are a helpful asistant. 
+                if you use the knowledge from the following documents please indicate so by putting at the end 'source: ' and the source of the information.
+                documents: {doc_text}.
+                """}
+
+    messages_to_pass.insert(0,system_message)
+
+
+    #st.write(messages_to_pass) #test
 
     # Get Responses
     stream = openai_client.chat.completions.create(
