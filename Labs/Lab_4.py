@@ -55,43 +55,54 @@ if 'messages' not in st.session_state:
     st.session_state['messages']=\
         [{'role':'assistant','content':'I want to answer a question'}]
 
+
 # Create Databases
 if 'Lab4_vectorDB' not in st.session_state:
     # Chroma client
     chroma_client = chromadb.PersistentClient(path = 'chroma' )
-    #chroma_client.delete_collection("Lab4Collection") #delete collection
-    collection = chroma_client.get_or_create_collection(name = 'Lab4Collection')
-    st.session_state['Lab4_vectorDB'] = collection
 
-    folder_path = Path("lab4_files/")
-    meta = {'IST 644 Syllabus.pdf':{'Course Title':'MANAGING DATA SCIENCE PROJECTS'},
-                 'IST 652 Syllabus.pdf':{'Course Title':'SCRIPTING FOR DATA ANALYSIS'},
-                 'IST 782 Syllabus.pdf':{'Course Title':'APPLIED DATA SCIENCE PORTFOLIO'},
-                 'IST614 Info tech Mgmt & Policy Syllabus.pdf':{'Course Title':'Information Technology Management and Policy'},
-                 'IST688-BuildingHC-AIAppsV2.pdf':{'Course Title':'Building Human-Centered AI Applications'},
-                 'IST691 Deep Learning in Practice Syllabus.pdf':{'Course Title':'Deep Learning in Practice'},
-                 'IST736-Text-Mining-Syllabus.pdf':{'Course Title':'Text Mining'}}
+    collection_names = [col.name for col in chroma_client.list_collections()]
     
-    # Loop through all files in the folder
-    for file_path in folder_path.iterdir():
-        if file_path.suffix == '.pdf':
-            try:
-                reader = PyPDF2.PdfReader(file_path)
-                document = ''
-                # loop through pages and extract the text data
-                for page_num in range(len(reader.pages)):
-                    page = reader.pages[page_num]
-                    document += page.extract_text()                
-                # Get the filename
-                filename = file_path.name
-                add_to_collection(collection,document,str(filename))
-            except Exception as e:
-                print(f"Error reading {file_path.name}: {e}")
+    if 'Lab4Collection' not in collection_names:
+    #chroma_client.delete_collection("Lab4Collection") #delete collection
+        collection = chroma_client.get_or_create_collection(name = 'Lab4Collection')
+        st.session_state['Lab4_vectorDB'] = collection
 
-if 'Lab4_vectorDB' in st.session_state:
-    collection = st.session_state['Lab4_vectorDB']
+        folder_path = Path("lab4_files/")
+        meta = {'IST 644 Syllabus.pdf':{'Course Title':'MANAGING DATA SCIENCE PROJECTS'},
+                    'IST 652 Syllabus.pdf':{'Course Title':'SCRIPTING FOR DATA ANALYSIS'},
+                    'IST 782 Syllabus.pdf':{'Course Title':'APPLIED DATA SCIENCE PORTFOLIO'},
+                    'IST614 Info tech Mgmt & Policy Syllabus.pdf':{'Course Title':'Information Technology Management and Policy'},
+                    'IST688-BuildingHC-AIAppsV2.pdf':{'Course Title':'Building Human-Centered AI Applications'},
+                    'IST691 Deep Learning in Practice Syllabus.pdf':{'Course Title':'Deep Learning in Practice'},
+                    'IST736-Text-Mining-Syllabus.pdf':{'Course Title':'Text Mining'}}
+        
+        # Loop through all files in the folder
+        for file_path in folder_path.iterdir():
+            if file_path.suffix == '.pdf':
+                try:
+                    reader = PyPDF2.PdfReader(file_path)
+                    document = ''
+                    # loop through pages and extract the text data
+                    for page_num in range(len(reader.pages)):
+                        page = reader.pages[page_num]
+                        document += page.extract_text()                
+                    # Get the filename
+                    filename = file_path.name
+                    add_to_collection(collection,document,str(filename))
+                except Exception as e:
+                    print(f"Error reading {file_path.name}: {e}")
+
+    else:         
+        collection = chroma_client.get_collection(name='Lab4Collection')
+        st.session_state['Lab4_vectorDB'] = collection
+
+# This is for test only
+
+#if 'Lab4_vectorDB' in st.session_state:
+#    collection = st.session_state['Lab4_vectorDB']
     # Retrieve the documents, embeddings, and metadata from the collection
-    results = collection.get()
+#    results = collection.get_collection()
     
     # Display the database contents in the Streamlit app
     #st.write(f"Documents: {results['documents'][0]}") # here are the documents
@@ -99,6 +110,7 @@ if 'Lab4_vectorDB' in st.session_state:
     #st.write(f"Metadata: {results['metadatas']}")
     #st.write(f"Embeddings: {results['embeddings'][0]}")
     #st.write(f"Embeddings: {results['data'][0]}")
+
 
 for msg in st.session_state.messages:
     st.chat_message(msg['role']).write(msg['content'])
