@@ -46,7 +46,7 @@ if st.sidebar.checkbox('Use Advance Model'):
 else: model = 'gpt-4o-mini'
 
 # Create an OpenAi client
-if 'client' not in st.session_state:
+if 'openai_client' not in st.session_state:
     openai_api_key = st.secrets['Openai_key']
     st.session_state.openai_client = OpenAI(api_key=openai_api_key)
 
