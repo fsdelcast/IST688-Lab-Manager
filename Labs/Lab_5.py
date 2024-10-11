@@ -103,23 +103,23 @@ messages.append({'role':'system','content':"Don't make assumptions about what va
 messages.append({'role':'user','content':'What is the weather like today'})
 
 # Get Responses asking for location
-chat_response = chat_completion_request(
-    messages,tools=tools
-)
+chat_response = chat_completion_request(messages, tools=tools)
 
 response_message = chat_response.choices[0].message
 messages.append(response_message)
+
+
 #st.write(response_message) #test
 
 # give location and invokes function
 messages.append({'role':'user','content':'I am in Syracuse, NY. I would like the temperaturee in Celsius.'})
-chat_response = chat_completion_request(
-    messages,tools=tools
-)
+chat_response = chat_completion_request(messages,tools=tools)
 response_message = chat_response.choices[0].message
+
 messages.append(response_message)
-#st.write(chat_response) #test
-#st.write(response_message)#test
+
+# st.write(chat_response) # test
+# st.write(response_message) # test
 
 # determine if a tool has been called
 tool_calls = response_message.tool_calls
@@ -128,6 +128,12 @@ if tool_calls:
     tool_call_id = tool_calls[0].id
     tool_function_name = tool_calls[0].function.name
     tool_location = eval(tool_calls[0].function.arguments)['location']
+
+    # test = tool_calls[0].function.arguments # test
+
+    # st.write(tool_location) # test
+    # st.write(tool_calls[0].function.arguments) # test
+    # st.write(type(test)) # test"
 
     if tool_function_name == 'get_current_weather':
         results = get_current_weather(tool_location,st.secrets['weather_key'] ) # get the arguments
