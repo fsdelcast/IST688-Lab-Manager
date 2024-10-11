@@ -28,7 +28,7 @@ summary_type = st.sidebar.selectbox('Choose a summary type',
 
 
 openai_api_key = st.secrets['Openai_key']
-st.write ('Do you want to know my secret? ', st.secrets['other_secret'])
+st.write ('Do you want to know my secret? ')
 
 
 

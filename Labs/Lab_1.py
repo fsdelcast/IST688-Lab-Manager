@@ -16,7 +16,7 @@ st.title("Page 1: My Document Question Answering")
 openai_api_key = st.secrets['Openai_key']
 
 
-st.write ('Do you want to know my secret? ', st.secrets['other_secret'])
+st.write ('Do you want to know my secret? ')
 
 if not openai_api_key:
     st.info("Please add your OpenAI API key to continue.", icon="🗝️")
